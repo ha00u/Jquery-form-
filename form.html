@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Drag and Drop Form Elements</title>
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #ffffff; /* Lighter background color for better contrast */
+    color: #333333; /* Darker text color for better contrast */
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+  }
+  #container {
+    display: flex;
+    justify-content: space-between;
+    width: 80%;
+    margin-top: 20px;
+  }
+  #toolbox {
+    border: 1px solid #cccccc; /* Lighter border color */
+    padding: 10px;
+    background-color: #f3f3f3; /* Slightly darker background color */
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+  }
+  .draggable-element {
+    cursor: pointer;
+    margin-bottom: 10px;
+    background-color: #007bff;
+    color: #ffffff; /* White text color */
+    padding: 5px;
+    border-radius: 5px;
+  }
+  #myForm {
+    border: 1px solid #cccccc; /* Lighter border color */
+    padding: 10px;
+    background-color: #f3f3f3; /* Slightly darker background color */
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    width: 60%;
+  }
+  .dropped-element {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .dropped-element label {
+    font-weight: bold;
+    margin-right: 10px;
+  }
+  .dropped-element input[type="text"],
+  .dropped-element input[type="email"],
+  .dropped-element input[type="tel"],
+  .dropped-element textarea,
+  .dropped-element select {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid #cccccc; /* Lighter border color */
+    border-radius: 5px;
+    transition: border-color 0.3s ease;
+    font-size: 14px;
+  }
+  .dropped-element textarea {
+    resize: vertical;
+    min-height: 80px;
+  }
+  .dropped-element input[type="text"]:focus,
+  .dropped-element input[type="email"]:focus,
+  .dropped-element input[type="tel"]:focus,
+  .dropped-element textarea:focus,
+  .dropped-element select:focus {
+    outline: none;
+    border-color: #007bff;
+  }
+  .deleteBtn {
+    background-color: #dc3545;
+    color: #ffffff; /* White text color */
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  #submitBtn {
+    background-color: #28a745;
+    color: #ffffff; /* White text color */
+    padding: 8px 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+  }
+  #submitBtn:hover {
+    background-color: #218838;
+  }
+</style>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+<script>
+  $(function() {
+    $(".draggable-element").draggable({
+      helper: "clone",
+      revert: "invalid"
+    });
+
+    $(".droppable-form").droppable({
+      drop: function(event, ui) {
+        var type = $(ui.draggable).data('type');
+        var label = $(ui.draggable).text();
+        var droppedElement;
+        if (label === 'Submit') {
+          droppedElement = $('<div class="dropped-element">').append('<button id="submitBtn" class="deleteBtn">' + label + '</button>');
+        } else {
+          droppedElement = $('<div class="dropped-element">').append('<label>' + label + ':</label>').append('<input type="' + type + '" name="' + label.toLowerCase().replace(' ', '_') + '">').append('<button class="deleteBtn">Delete</button>');
+          if (type === 'select') {
+            droppedElement.find('input').replaceWith('<select name="' + label.toLowerCase().replace(' ', '_') + '"><option value="">Select...</option><option value="male">Male</option><option value="female">Female</option></select>');
+          }
+          if (type === 'tel') {
+            droppedElement.find('input').attr('pattern', '\\d*').attr('placeholder', 'Enter digits only'); // Set type to tel and allow only digits
+          }
+          if (label === 'Gender') {
+            droppedElement.find('input').replaceWith('<label><input type="checkbox" name="gender" value="male"> Male</label><br><label><input type="checkbox" name="gender" value="female"> Female</label>');
+          }
+          if (label === 'Exceptions') {
+            droppedElement.find('input').replaceWith('<textarea name="exceptions" placeholder="Enter exceptions here..." rows="4"></textarea>');
+          }
+        }
+        $(this).find("form").append(droppedElement);
+        droppedElement.draggable({
+          containment: "parent"
+        });
+      }
+    });
+
+    $(document).on('click', '.deleteBtn', function() {
+      $(this).parent('.dropped-element').remove();
+    });
+  });
+</script>
+</head>
+<body>
+
+<div id="container">
+  <div id="toolbox">
+    <div class="draggable-element" data-type="text">First Name</div>
+    <div class="draggable-element" data-type="text">Last Name</div>
+    <div class="draggable-element" data-type="text">Company</div>
+    <div class="draggable-element" data-type="email">Email</div>
+    <div class="draggable-element" data-type="tel">Phone Number</div>
+    <div class="draggable-element" data-type="checkbox">Gender</div>
+    <div class="draggable-element" data-type="text">Exceptions</div>
+    <!-- Make the submit button draggable -->
+    <div id="submitBtn" class="draggable-element deleteBtn">Submit</div>
+    <!-- Add more form elements here -->
+  </div>
+
+  <div id="myForm" class="droppable-form">
+    <form>
+      <p>Drop form elements here:</p>
+    </form>
+  </div>
+</div>
+
+</body>
+</html>
